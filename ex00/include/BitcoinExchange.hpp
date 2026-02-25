@@ -4,24 +4,17 @@
 # include <map>
 # include <ctime>
 # include <string>
-
-typedef struct s_timeValuePair	t_timeValuePair;
-
-struct s_timeValuePair
-{
-	std::tm time;
-	float	value;
-}
+#include <utility>
 
 class BitcoinExchange
 {
 	private:
-		std::map<std::tm, float>	priceHistory_;
+		std::map<std::time_t, float>	priceHistory_;
 
 		BitcoinExchange(void);
 
-		void						addLine(std::string line);
-		static t_timeValuePair		parseLine(std::string line);
+		void									addLine(std::pair<std::time_t, double> pair);
+		static std::pair<std::time_t, double>	parseLine(std::string line);
 	public:
 		BitcoinExchange(std::string priceHistoryCSVFile);
 		BitcoinExchange(BitcoinExchange const& toCopy);
