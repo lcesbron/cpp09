@@ -22,12 +22,15 @@ class BitcoinExchange
 		static bool								isValueValid(std::string value);
 
 		static std::pair<std::time_t, double>	parseLine(std::string line);
+
 	public:
 		BitcoinExchange(std::string priceHistoryCSVFile);
 		BitcoinExchange(BitcoinExchange const& toCopy);
 		~BitcoinExchange(void);
 
 		BitcoinExchange&	operator=(BitcoinExchange const& toCopy);
+
+		void				processInput(std::string inputFileName) const;
 };
 
 #endif //BITCOINEXCHANGE_HPP

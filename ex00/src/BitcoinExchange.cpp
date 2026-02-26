@@ -1,7 +1,10 @@
 #include "BitcoinExchange.hpp"
+#include <cstddef>
+#include <iostream>
 #include <cstdlib>
 #include <cctype>
 #include <ctime>
+#include <exception>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -13,15 +16,22 @@ BitcoinExchange::BitcoinExchange(std::string priceHistoryCSVFile)
 {
 	std::ifstream					CSVFile(priceHistoryCSVFile.c_str());
 	std::string						line;
-	std::pair<std::time_t, double>	current_pair;
+	std::pair<std::time_t, double>	currentPair;
 
 	if (CSVFile.is_open())
 	{
 		std::getline(CSVFile, line);
 		while (std::getline(CSVFile, line))
 		{
-			current_pair = this->parseLine(line);
-			this->priceHistory_.insert(current_pair);
+			try
+			{
+				currentPair = this->parseLine(line);
+			}
+			catch (std::exception& e)
+			{
+				std::cout << line << "->" << e.what() << std::endl;
+			}
+			this->priceHistory_.insert(currentPair);
 		}
 	}
 	else
@@ -136,4 +146,53 @@ std::pair<std::time_t, double>	BitcoinExchange::parseLine(std::string line)
 	ret.first = std::mktime(&time);
 	ret.second = std::atof(value.c_str());
 	return (ret);
+}
+
+size_t	BitcoinExchange::isInputLineValid(std::string line)
+{
+	size_t	ret = line.find("|");
+
+	if (line.size() < 12 || ret == std::string::npos)
+		return (0);
+	return (ret);
+}
+
+std::pair<std::string, double>	BitcoinExchange::parseInputLine(std::string line)
+{
+	std::pair<std::string, double>	ret;
+	std::string						date;
+	std::string						value;
+	size_t							pipeLocation = isInputLineValid(line);
+
+	if (!pipeLocation)
+		throw std::invalid_argument("Invalid input line.");
+	date = line.substr(0, 10);
+	if (!BitcoinExchange::isDateValid(date))
+		throw std::invalid_argument("Incorrect date in input file.");
+	while (pipeLocation )
+	value = line.substr(11, line.size() - 11);
+	if (!BitcoinExchange::isValueValid(value))
+		throw std::invalid_argument("Incorrect value in input file.");
+}
+
+void				BitcoinExchange::processInput(std::string inputFileName) const
+{
+	std::ifstream					inputFile(inputFileName.c_str());
+	std::string						line;
+	std::pair<std::string, double>	currentLine;
+	std::pair<std::string, double>	finalValue;
+
+	if (inputFile.is_open())
+	{
+		std::getline(inputFile, line);
+		while (std::getline(inputFile, line))
+		{
+			currentLine = parseInputLine(line);
+			printLineValue(currentLine, finalValue);
+		}
+	}
+	else
+	{
+		throw std::invalid_argument("File can't be open");
+	}
 }
