@@ -25,7 +25,7 @@ BitcoinExchange::BitcoinExchange(std::string priceHistoryCSVFile)
 		{
 			try
 			{
-				currentPair = this->parseLine(line);
+				currentPair = this->parseCSVLine(line);
 			}
 			catch (std::exception& e)
 			{
@@ -127,7 +127,7 @@ bool	BitcoinExchange::isDateValid(std::string date)
 	return (isDatePossible(day, mounth, year));
 }
 
-std::pair<std::time_t, double>	BitcoinExchange::parseLine(std::string line)
+std::pair<std::time_t, double>	BitcoinExchange::parseCSVLine(std::string line)
 {
 	std::tm							time = {};
 	std::pair<std::time_t, double>	ret;
@@ -162,6 +162,7 @@ std::pair<std::string, double>	BitcoinExchange::parseInputLine(std::string line)
 	std::pair<std::string, double>	ret;
 	std::string						date;
 	std::string						value;
+	std::tm							tp;
 	size_t							pipeLocation = isInputLineValid(line);
 
 	if (!pipeLocation)
@@ -169,10 +170,16 @@ std::pair<std::string, double>	BitcoinExchange::parseInputLine(std::string line)
 	date = line.substr(0, 10);
 	if (!BitcoinExchange::isDateValid(date))
 		throw std::invalid_argument("Incorrect date in input file.");
-	while (pipeLocation )
-	value = line.substr(11, line.size() - 11);
+	while (pipeLocation++ < line.size() && std::isspace(line[pipeLocation]));
+	if (pipeLocation == line.size())
+		throw std::invalid_argument("Invalid input line.");
+	value = line.substr(pipeLocation, line.size() - pipeLocation);
 	if (!BitcoinExchange::isValueValid(value))
 		throw std::invalid_argument("Incorrect value in input file.");
+	ret.first = strptime(date.c_str(), "%Y-%m-%d", &tp);
+	ret.second = std::atof(value.c_str());
+	if (ret.second > 1000)
+		throw std::invalid_argument("Value over 1000 in input line");
 }
 
 void				BitcoinExchange::processInput(std::string inputFileName) const
