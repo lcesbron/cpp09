@@ -13,7 +13,14 @@ class BitcoinExchange
 
 		BitcoinExchange(void);
 
-		void									addLine(std::pair<std::time_t, double> pair);
+		static bool								isCSVLineValid(std::string line);
+
+		static bool								isDateValid(std::string line);
+		static bool								isDatePossible(unsigned int day, unsigned int mounth, unsigned int year);
+		static bool								isLeapYear(unsigned int year);
+
+		static bool								isValueValid(std::string value);
+
 		static std::pair<std::time_t, double>	parseLine(std::string line);
 	public:
 		BitcoinExchange(std::string priceHistoryCSVFile);

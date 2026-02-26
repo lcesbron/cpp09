@@ -3,7 +3,6 @@
 #include <cctype>
 #include <ctime>
 #include <fstream>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -12,24 +11,18 @@ BitcoinExchange::BitcoinExchange(void) {}
 
 BitcoinExchange::BitcoinExchange(std::string priceHistoryCSVFile)
 {
-	std::ifstream	CSVFile(priceHistoryCSVFile.c_str());
-	std::string		line;
+	std::ifstream					CSVFile(priceHistoryCSVFile.c_str());
+	std::string						line;
+	std::pair<std::time_t, double>	current_pair;
 
 	if (CSVFile.is_open())
 	{
 		std::getline(CSVFile, line);
-		char							*buf = new char[11];
 		while (std::getline(CSVFile, line))
 		{
-			std::pair<std::time_t, double>	tmp = this->parseLine(line);
-			std::tm*						time_tm = localtime(&tmp.first);
-
-			std::strftime(buf, 11, "%Y-%m-%d", time_tm);
-			std::cout << buf << std::endl;
-			std::cout << tmp.second << std::endl;
-			this->addLine(tmp);
+			current_pair = this->parseLine(line);
+			this->priceHistory_.insert(current_pair);
 		}
-		delete [] buf;
 	}
 	else
 	{
@@ -50,28 +43,97 @@ BitcoinExchange&	BitcoinExchange::operator=(BitcoinExchange const& toCopy)
 	return (*this);
 }
 
-std::pair<std::time_t, double>	BitcoinExchange::parseLine(std::string line)
+bool	BitcoinExchange::isCSVLineValid(std::string line)
 {
-	std::tm							time;
-	std::pair<std::time_t, double>	ret;
-
-	if (line.size() < 12 || line[4] != '-' || line[7] != '-')
-		throw std::invalid_argument("Incorrect line in file");
-	for (std::string::iterator i = line.begin(); i < line.begin() + 4 ; i++)
-		if (!std::isdigit(*i)) {throw std::invalid_argument("Incorrect line in file");}
-	for (std::string::iterator i = line.begin() + 5; i < line.begin() + 7 ; i++)
-		if (!std::isdigit(*i)) {throw std::invalid_argument("Incorrect line in file");}
-	for (std::string::iterator i = line.begin() + 8; i < line.begin() + 10 ; i++)
-		if (!std::isdigit(*i)) {throw std::invalid_argument("Incorrect line in file");}
-	time.tm_year = std::atoi(&*line.begin());
-	if ((time.tm_mon = std::atoi(&*(line.begin() + 5)) - 1) > 11) {throw std::invalid_argument("Incorrect line in file");}
-	if ((time.tm_mday = std::atoi(&*(line.begin() + 8))) > 31) {throw std::invalid_argument("Incorrect line in file");}
-	if ((ret.second = std::atof(&*(line.begin() + 11))) > 1000.0) {throw std::invalid_argument("Incorrect line in file");}
-	ret.first = std::mktime(&time);
-	return (ret);
+	if (line.size() < 12 || line.find(',', 0) != 10)
+		return (false);
+	return (true);
 }
 
-void	BitcoinExchange::addLine(std::pair<std::time_t, double> pair)
+bool	BitcoinExchange::isValueValid(std::string value)
 {
-	this->priceHistory_.insert(pair);
+	bool					gotComma = false;
+	std::string::iterator	i = value.begin();
+
+	while (i < value.end())
+	{
+		if (!std::isdigit(*i) && !(*i == '.' && !gotComma && i != value.end() - 1)) {return (false);}
+		if (*i == '.')
+			gotComma = true;
+		++i;
+	}
+	return (true);
+}
+
+bool	BitcoinExchange::isLeapYear(unsigned int year)
+{
+	return (year % 400 == 0 || (year % 4 == 0 && year % 100 != 0));
+}
+
+bool	BitcoinExchange::isDatePossible(unsigned int day, unsigned int mounth, unsigned int year)
+{
+	switch (mounth)
+	{
+		case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+			return (day <= 31 ? true : false);
+		case 2:
+			return (day <= 28 + BitcoinExchange::isLeapYear(year) ? true : false);
+		case 4: case 6: case 9: case 11:
+			return (day <= 30 ? true : false);
+		default:
+			return (false);
+	}
+}
+
+bool	BitcoinExchange::isDateValid(std::string date)
+{
+	std::string::iterator	i = date.begin();
+	unsigned int			year = 0;
+	unsigned int			mounth = 0;
+	unsigned int			day = 0;
+
+	if (date[4] != '-' || date[7] != '-')
+		return (false);
+	while (i < date.begin() + 4)
+	{
+		if (!std::isdigit(*i)) {return (false);}
+		year = *i - '0' + year * 10;
+		++i;
+	}
+	if (*i++ != '-') {return (false);}
+	while (i < date.begin() + 7)
+	{
+		if (!std::isdigit(*i)) {return (false);}
+		mounth = *i - '0' + mounth * 10;
+		++i;
+	}
+	if (*i++ != '-') {return (false);}
+	while (i < date.end())
+	{
+		if (!std::isdigit(*i)) {return (false);}
+		day = *i - '0' + day * 10;
+		++i;
+	}
+	return (isDatePossible(day, mounth, year));
+}
+
+std::pair<std::time_t, double>	BitcoinExchange::parseLine(std::string line)
+{
+	std::tm							time = {};
+	std::pair<std::time_t, double>	ret;
+	std::string						date;
+	std::string						value;
+
+	if (!BitcoinExchange::isCSVLineValid(line))
+		throw std::invalid_argument("Incorrect line format in .csv file.");
+	date = line.substr(0, 10);
+	if (!BitcoinExchange::isDateValid(date))
+		throw std::invalid_argument("Incorrect date in .csv file.");
+	value = line.substr(11, line.size() - 11);
+	if (!BitcoinExchange::isValueValid(value))
+		throw std::invalid_argument("Incorrect value in .csv file.");
+	strptime(date.c_str(), "%Y-%m-%d", &time);
+	ret.first = std::mktime(&time);
+	ret.second = std::atof(value.c_str());
+	return (ret);
 }
