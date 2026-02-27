@@ -6,6 +6,8 @@
 #include <ctime>
 #include <exception>
 #include <fstream>
+#include <map>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -157,9 +159,9 @@ size_t	BitcoinExchange::isInputLineValid(std::string line)
 	return (ret);
 }
 
-std::pair<std::string, double>	BitcoinExchange::parseInputLine(std::string line)
+std::pair<std::time_t, double>	BitcoinExchange::parseInputLine(std::string line)
 {
-	std::pair<std::string, double>	ret;
+	std::pair<std::time_t, double>	ret;
 	std::string						date;
 	std::string						value;
 	std::tm							tp;
@@ -176,30 +178,61 @@ std::pair<std::string, double>	BitcoinExchange::parseInputLine(std::string line)
 	value = line.substr(pipeLocation, line.size() - pipeLocation);
 	if (!BitcoinExchange::isValueValid(value))
 		throw std::invalid_argument("Incorrect value in input file.");
-	ret.first = strptime(date.c_str(), "%Y-%m-%d", &tp);
+	strptime(date.c_str(), "%Y-%m-%d", &tp);
+	ret.first = std::mktime(&tp);
 	ret.second = std::atof(value.c_str());
 	if (ret.second > 1000)
-		throw std::invalid_argument("Value over 1000 in input line");
+		throw std::invalid_argument("Value over 1000 in input line.");
+	return (ret);
 }
 
-void				BitcoinExchange::processInput(std::string inputFileName) const
+std::pair<std::time_t, double>	BitcoinExchange::computeFinalValue(std::pair<std::time_t, double> toFind) const
 {
-	std::ifstream					inputFile(inputFileName.c_str());
-	std::string						line;
-	std::pair<std::string, double>	currentLine;
-	std::pair<std::string, double>	finalValue;
+	std::map<std::time_t, double>::const_iterator	it = this->priceHistory_.lower_bound(toFind.first);
 
-	if (inputFile.is_open())
+	if (toFind.first == it->first)
+		return (*it);
+	else if (it == this->priceHistory_.begin())
 	{
-		std::getline(inputFile, line);
-		while (std::getline(inputFile, line))
-		{
-			currentLine = parseInputLine(line);
-			printLineValue(currentLine, finalValue);
-		}
+		throw std::invalid_argument("No date correponding in database.");
 	}
 	else
 	{
-		throw std::invalid_argument("File can't be open");
+		return (*(it--));
 	}
 }
+
+void	printLineValue(std::pair<std::time_t, double> currentLine, std::pair<std::time_t, double> finalValue)
+{
+	char buf[11];
+
+	strftime(buf, 11, "%Y-%m-%d", std::localtime(&finalValue.first));
+	std::cout << buf << " => " << currentLine.second << " = " << currentLine.second * finalValue.second <<std::endl;
+}
+
+void	BitcoinExchange::processInput(std::string inputFileName) const
+{
+	std::ifstream					inputFile(inputFileName.c_str());
+	std::string						line;
+	std::pair<std::time_t, double>	currentLine;
+	std::pair<std::time_t, double>	finalValue;
+
+	if (!inputFile.is_open())
+	{
+		throw std::invalid_argument("File can't be open");
+	}
+	std::getline(inputFile, line);
+	while (std::getline(inputFile, line))
+	{
+		try
+		{
+			currentLine = this->parseInputLine(line);
+			finalValue = this->computeFinalValue(currentLine);
+			printLineValue(currentLine, finalValue);
+		}
+		catch (std::exception& e)
+		{
+			std::cout << "error: " << e.what() << " line: " << line << std::endl;
+		}
+	}
+	}
