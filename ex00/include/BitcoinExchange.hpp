@@ -22,6 +22,7 @@ class BitcoinExchange
 		static bool								isCSVLineValid(std::string line);
 		static std::pair<std::time_t, double>	parseCSVLine(std::string line);
 
+		static void								printLineValue(std::pair<std::time_t, double> currentLine, std::pair<std::time_t, double> finalValue);
 		static size_t							isInputLineValid(std::string line);
 		static std::pair<std::time_t, double>	parseInputLine(std::string line);
 		std::pair<std::time_t, double>			findClosestValue(std::pair<std::time_t, double> toFind) const;

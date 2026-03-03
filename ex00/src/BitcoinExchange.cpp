@@ -12,6 +12,15 @@
 #include <string>
 #include <utility>
 
+// // TODO: delete
+// static void utilPrintPair(std::pair<time_t, double>v)
+// {
+// 	char buf[11];
+
+// 	strftime(buf, 11, "%Y-%m-%d", std::localtime(&v.first));
+// 	std::cout << buf << ' ' << v.second << std::endl;
+// }
+
 BitcoinExchange::BitcoinExchange(void) {}
 
 BitcoinExchange::BitcoinExchange(std::string priceHistoryCSVFile)
@@ -57,9 +66,7 @@ BitcoinExchange&	BitcoinExchange::operator=(BitcoinExchange const& toCopy)
 
 bool	BitcoinExchange::isCSVLineValid(std::string line)
 {
-	if (line.size() < 12 || line.find(',', 0) != 10)
-		return (false);
-	return (true);
+	return (!(line.size() < 12 || line.find(',', 0) != 10));
 }
 
 bool	BitcoinExchange::isValueValid(std::string value)
@@ -87,11 +94,11 @@ bool	BitcoinExchange::isDatePossible(unsigned int day, unsigned int mounth, unsi
 	switch (mounth)
 	{
 		case 1: case 3: case 5: case 7: case 8: case 10: case 12:
-			return (day <= 31 ? true : false);
+			return (day <= 31);
 		case 2:
 			return (day <= 28 + BitcoinExchange::isLeapYear(year) ? true : false);
 		case 4: case 6: case 9: case 11:
-			return (day <= 30 ? true : false);
+			return (day <= 30);
 		default:
 			return (false);
 	}
@@ -164,7 +171,7 @@ std::pair<std::time_t, double>	BitcoinExchange::parseInputLine(std::string line)
 	std::pair<std::time_t, double>	ret;
 	std::string						date;
 	std::string						value;
-	std::tm							tp;
+	std::tm							tp = {};
 	size_t							pipeLocation = isInputLineValid(line);
 
 	if (!pipeLocation)
@@ -202,7 +209,7 @@ std::pair<std::time_t, double>	BitcoinExchange::computeFinalValue(std::pair<std:
 	}
 }
 
-void	printLineValue(std::pair<std::time_t, double> currentLine, std::pair<std::time_t, double> finalValue)
+void	BitcoinExchange::printLineValue(std::pair<std::time_t, double> currentLine, std::pair<std::time_t, double> finalValue)
 {
 	char buf[11];
 
@@ -226,13 +233,13 @@ void	BitcoinExchange::processInput(std::string inputFileName) const
 	{
 		try
 		{
-			currentLine = this->parseInputLine(line);
-			finalValue = this->computeFinalValue(currentLine);
-			printLineValue(currentLine, finalValue);
+		currentLine = this->parseInputLine(line);
+		finalValue = this->computeFinalValue(currentLine);
+		printLineValue(currentLine, finalValue);
 		}
 		catch (std::exception& e)
 		{
 			std::cout << "error: " << e.what() << " line: " << line << std::endl;
 		}
 	}
-	}
+}
