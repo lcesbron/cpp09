@@ -32,8 +32,10 @@ class RPN
 
 		void	pushChar(int c);
 
-		std::pair<t_value, t_value>	computeOperator(void);
-		void							computeAdd(void);
+		void	computeRecursiveExpression(void);
+
+		void	computeOperator(t_type operatorType);
+		static int	operation(t_type operatorType, std::pair<t_value, t_value> toOperate);
 	public:
 		RPN(RPN const& toCopy);
 		RPN(std::string const& expression);

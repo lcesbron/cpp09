@@ -65,40 +65,61 @@ RPN&	RPN::operator=(RPN const& toCopy)
 	return (*this);
 }
 
-std::pair<t_value, t_value>	RPN::computeOperator(void)
+int		RPN::operation(t_type operatorType, std::pair<t_value, t_value> toOperate)
 {
-	std::pair<t_value, t_value>	saved;
-
-	this->expression_.pop();
-	if (this->expression_.size() < 2) {throw std::invalid_argument("Expected values for operator");}
-	this->computeExpression();
-	saved.first = this->expression_.top();
-	this->expression_.pop();
-	this->computeExpression();
-	saved.second = this->expression_.top();
-	this->expression_.pop();
-	return (saved);
+	switch (operatorType)
+	{
+		case ADD:
+			return (toOperate.first.value + toOperate.second.value);
+		case SUB:
+			return (toOperate.first.value - toOperate.second.value);
+		case MULT:
+			return (toOperate.first.value * toOperate.second.value);
+		case DIV:
+			return (toOperate.first.value / toOperate.second.value);
+		default :
+			return (0);
+	}
 }
 
-void	RPN::computeAdd(void)
+void	RPN::computeOperator(t_type operatorType)
 {
-	std::pair<t_value, t_value>	toAdd = computeOperator();
+	std::pair<t_value, t_value>	saved;
 	t_value						toPush;
 
+	this->expression_.pop();
+
+	if (this->expression_.size() < 2) {throw std::invalid_argument("Expected values for operator");}
+
+	this->computeRecursiveExpression();
+	saved.first = this->expression_.top();
+	this->expression_.pop();
+	this->computeRecursiveExpression();
+	saved.second = this->expression_.top();
+	this->expression_.pop();
+
 	toPush.type = VALUE;
-	toPush.value = toAdd.first.value + toAdd.first.value;
+	toPush.value = operation(operatorType, saved);
 	this->expression_.push(toPush);
+}
+
+void	RPN::computeRecursiveExpression(void)
+{
+	switch (this->expression_.top().type)
+	{
+		case ADD: case SUB: case MULT: case DIV:
+			computeOperator(this->expression_.top().type);
+		default:
+			break ;
+	}
 }
 
 int		RPN::computeExpression(void)
 {
-	switch (this->expression_.top().type)
+	this->computeRecursiveExpression();
+	if (this->expression_.size() > 1)
 	{
-		case ADD:
-			computeAdd();
-			break ;
-		default:
-			break ;
+		throw std::invalid_argument("Error");
 	}
 	return (this->expression_.top().value);
 }
