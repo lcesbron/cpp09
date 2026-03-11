@@ -10,17 +10,19 @@ class PmergeMe
 {
 	private:
 		bool										odd;
+		bool										hasInput;
 		std::vector<uint32_t>						input;
-		std::vector<std::pair<uint32_t, uint32_t>>	pairs;
 		std::vector<uint32_t>						output;
+
+		PmergeMe(std::vector<uint32_t> const& toLoad, uint32_t pairSize);
+
+		void					sortRecursive(uint32_t elementSize);
 
 		void					fillPairs(void);
 		void					orderPairsElems(void);
 		void					sortPairs(void); // Here is recursive
 		void					insertMaxs(void);
 		void					insertMins(void); // Here is tricky part (pseudo Jacobsthen)
-
-		std::vector<uint32_t>	makeVectorFromPairsMax(void) const;
 
 	public:
 		PmergeMe(void);
