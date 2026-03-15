@@ -3,40 +3,36 @@
 
 # include <vector>
 # include <string>
-# include <utility>
-# include <cstdint>
+#include <stdint.h>
 
 class PmergeMe
 {
 	private:
-		bool										odd;
-		bool										hasInput;
-		std::vector<uint32_t>						input;
-		std::vector<uint32_t>						output;
+		bool										odd_;
+		bool										hasInput_;
+		uint32_t									elementSize_;
+		std::vector<uint32_t>						input_;
+		std::vector<uint32_t>						output_;
 
-		PmergeMe(std::vector<uint32_t> const& toLoad, uint32_t pairSize);
+		PmergeMe(PmergeMe const& toCopy);
+		PmergeMe&	operator=(PmergeMe const& toCopy);
 
-		void					sortRecursive(uint32_t elementSize);
+		PemergeMe(std::vector<uint32_t> const& toLoad, uint32_t elementSize);
 
-		void					fillPairs(void);
-		void					orderPairsElems(void);
-		void					sortPairs(void); // Here is recursive
-		void					insertMaxs(void);
-		void					insertMins(void); // Here is tricky part (pseudo Jacobsthen)
+		void					sortPairs(void);
+
 
 	public:
 		PmergeMe(void);
 		PmergeMe(std::string const& toLoad);
 		PmergeMe(std::vector<uint32_t> const& toLoad);
-		PmergeMe(PmergeMe const& toCopy);
 		~PmergeMe(void);
 
-		PmergeMe&	operator=(PmergeMe const& toCopy);
 
 		void	loadInput(std::string const& toLoad);
 		void	loadInput(std::vector<uint32_t> const& toLoad);
 
-		void	sort(void);
+		std::vector<uint32_t>	sort(void);
 };
 
 #endif //PMERGEME_HPP

@@ -19,7 +19,7 @@ DEP_DIR		=		$(addprefix $(BUILD_DIR), dep/)
 
 #		SRC
 
-BASENAME	=		main RPN
+BASENAME	=		main
 
 SRC			=		$(addprefix $(SRC_DIR), $(addsuffix .cpp, $(BASENAME)))
 OBJ			=		$(addprefix $(OBJ_DIR), $(addsuffix .o, $(BASENAME)))
