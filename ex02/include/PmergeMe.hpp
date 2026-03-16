@@ -1,9 +1,10 @@
 #ifndef PMERGEME_HPP
 # define PMERGEME_HPP
 
+#include <cstdint>
 # include <vector>
 # include <string>
-#include <stdint.h>
+# include <stdint.h>
 
 class PmergeMe
 {
@@ -11,28 +12,29 @@ class PmergeMe
 		bool										odd_;
 		bool										hasInput_;
 		uint32_t									elementSize_;
-		std::vector<uint32_t>						input_;
-		std::vector<uint32_t>						output_;
+		std::vector<uint64_t>						input_;
+		std::vector<uint64_t>						output_;
 
 		PmergeMe(PmergeMe const& toCopy);
-		PmergeMe&	operator=(PmergeMe const& toCopy);
+		PmergeMe&	operator=(PmergeMe const& toAssign);
 
-		PemergeMe(std::vector<uint32_t> const& toLoad, uint32_t elementSize);
+		PmergeMe(std::vector<uint64_t> const& toLoad, uint64_t elementSize);
+		void	loadInput(std::vector<uint64_t> const& toLoad);
 
-		void					sortPairs(void);
+		void	sortPairs(void);
+		void	updateIOVectors(std::vector<uint64_t> const& sortedMaxs);
+		void	convertInputToInsertionOrder(void);
+		void	insertElems(void); // Binary Search
 
-
+		void	swapValues(uint64_t& index1, uint64_t& index2);
 	public:
 		PmergeMe(void);
 		PmergeMe(std::string const& toLoad);
-		PmergeMe(std::vector<uint32_t> const& toLoad);
 		~PmergeMe(void);
 
-
 		void	loadInput(std::string const& toLoad);
-		void	loadInput(std::vector<uint32_t> const& toLoad);
 
-		std::vector<uint32_t>	sort(void);
+		std::vector<uint64_t>	sort(void);
 };
 
 #endif //PMERGEME_HPP
