@@ -78,20 +78,7 @@ std::vector<uint64_t>	PmergeMe::sort(void)
 {
 	std::vector<uint64_t>	sortedMaxs;
 
-	this->sortPairs();
-	PmergeMe	recurse(this->input_, this->elementSize_ * 2);
-	sortedMaxs = recurse.sort();
-	this->updateIOVectors(sortedMaxs);
-	// INSERT FIRST VALUE OF I IN BEGINNING OF O
-	this->convertInputToInsertionOrder();
-	this->insertElems();
-	return (this->output_);
 }
 
-void	PmergeMe::sortPairs(void)
-{
-	for (std::vector<uint64_t>::iterator it = this->input_.begin(); it < this->input_.end(); it += elementSize_)
-	{
 
-	}
-}
+
