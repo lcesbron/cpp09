@@ -25,9 +25,11 @@ class PmergeMe
 		void					loadPairs(void);
 		void					sortPairs(void);
 		std::vector<uint64_t>	createMaxVector(void);
+		std::vector<uint64_t>	rearrangeMins(void);
 		std::vector<uint64_t>	createInsertionVector(void);
 		void					insert(void);
 
+		void					PmergeMe::swapPairElems(std::pair<uint64_t,uint64_t>& p)
 	public:
 		PmergeMe(void);
 		PmergeMe(std::string const& toLoad);
