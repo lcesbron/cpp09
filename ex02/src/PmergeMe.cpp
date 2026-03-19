@@ -2,6 +2,7 @@
 #include <climits>
 #include <cstdint>
 #include <cstdlib>
+#include <iterator>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -164,17 +165,17 @@ std::vector<uint64_t>	PmergeMe::createMaxVector(void)
 std::vector<uint64_t>	PmergeMe::rearrangeMins(void)
 {
 	std::vector<uint64_t>									ret;
-	std::vector<uint64_t>::iterator							max_it;
-	std::vector<std::pair<uint64_t, uint64_t> >::iterator	pairs_it;
+	std::vector<uint64_t>::iterator							maxIt;
+	std::vector<std::pair<uint64_t, uint64_t> >::iterator	pairsIt;
 
-	for (max_it = this->output_.begin(); max_it < this->output_.end(); max_it++)
+	for (maxIt = this->output_.begin(); maxIt < this->output_.end(); maxIt++)
 	{
-		for (pairs_it = this->inputPairs_.begin(); pairs_it < this->inputPairs_.end() - this->odd_; pairs_it++)
+		for (pairsIt = this->inputPairs_.begin(); pairsIt < this->inputPairs_.end() - this->odd_; pairsIt++)
 		{
-			if (*max_it == pairs_it->second)
+			if (*maxIt == pairsIt->second)
 			{
-				ret.push_back(pairs_it->first);
-				this->inputPairs_.erase(pairs_it);
+				ret.push_back(pairsIt->first);
+				this->inputPairs_.erase(pairsIt);
 			}
 		}
 	}
@@ -184,10 +185,30 @@ std::vector<uint64_t>	PmergeMe::rearrangeMins(void)
 std::vector<uint64_t>	PmergeMe::createInsertionVector(void)
 {
 	std::vector<uint64_t>			ret;
-	std::vector<uint64_t>::iterator	it;
+	uint64_t						counter;
+	uint64_t						buf;
+	uint64_t						prevGroupSize = 0;
+	uint64_t						currentGroupSize = 2;
 
-
+	while (this->input_.size())
+	{
+		counter = 0;
+		while (this->input_.size() && counter < currentGroupSize)
+		{
+			ret.insert(ret.begin() + prevGroupSize, *it);
+			this->input_.erase(this->input_.begin());
+			++counter;
+		}
+		buf = currentGroupSize;
+		currentGroupSize = 2 * prevGroupSize + currentGroupSize;
+		prevGroupSize = buf;
+	}
 	return (ret);
+}
+
+void	PmergeMe::binaryInsert(void)
+{
+
 }
 
 std::vector<uint64_t>	PmergeMe::sort(void)
@@ -205,7 +226,7 @@ std::vector<uint64_t>	PmergeMe::sort(void)
 	this->output_ = sortedMaxs;
 	this->input_ = rearrangeMins();
 	this->input_ = createInsertionVector();
-	insert();
+	binaryInsert();
 	return (this->output_);
 }
 
