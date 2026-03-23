@@ -184,19 +184,20 @@ std::vector<uint64_t>	PmergeMe::rearrangeMins(void)
 
 std::vector<uint64_t>	PmergeMe::createInsertionVector(void)
 {
-	std::vector<uint64_t>			ret;
-	uint64_t						counter;
-	uint64_t						buf;
-	uint64_t						prevGroupSize = 0;
-	uint64_t						currentGroupSize = 2;
+	std::vector<uint64_t>	ret;
+	uint64_t		i = 0;
+	uint64_t		counter;
+	uint64_t		buf;
+	uint64_t		prevGroupSize = 0;
+	uint64_t		currentGroupSize = 2;
 
-	while (this->input_.size())
+	while (ret.size() < this->input_.size())
 	{
 		counter = 0;
-		while (this->input_.size() && counter < currentGroupSize)
+		while (ret.size() < this->input_.size() && counter < currentGroupSize)
 		{
-			ret.insert(ret.begin() + prevGroupSize, *it);
-			this->input_.erase(this->input_.begin());
+			ret.insert(ret.begin() + prevGroupSize, i);
+			++i;
 			++counter;
 		}
 		buf = currentGroupSize;
@@ -206,9 +207,33 @@ std::vector<uint64_t>	PmergeMe::createInsertionVector(void)
 	return (ret);
 }
 
+//std::vector<uint64_t>	PmergeMe::createInsertionVector(void)
+//{
+//	std::vector<uint64_t>			ret;
+//	uint64_t						counter;
+//	uint64_t						buf;
+//	uint64_t						prevGroupSize = 0;
+//	uint64_t						currentGroupSize = 2;
+//
+//	while (this->input_.size())
+//	{
+//		counter = 0;
+//		while (this->input_.size() && counter < currentGroupSize)
+//		{
+//			ret.insert(ret.begin() + prevGroupSize, *it);
+//			this->input_.erase(this->input_.begin());
+//			++counter;
+//		}
+//		buf = currentGroupSize;
+//		currentGroupSize = 2 * prevGroupSize + currentGroupSize;
+//		prevGroupSize = buf;
+//	}
+//	return (ret);
+//}
+
 void	PmergeMe::binaryInsert(void)
 {
-
+	
 }
 
 std::vector<uint64_t>	PmergeMe::sort(void)
@@ -229,6 +254,3 @@ std::vector<uint64_t>	PmergeMe::sort(void)
 	binaryInsert();
 	return (this->output_);
 }
-
-
-
