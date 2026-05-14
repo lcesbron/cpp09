@@ -210,7 +210,7 @@ void	PmergeMe::binaryInsert(std::vector<uint64_t> insertionVector)
 
 	while (i < this->input_.size())
 	{
-		it = std::upper_bound(this->output_.begin(), this->output_.begin() + i + insertionVector[i] + 3, this->input_[i]);
+		it = std::upper_bound(this->output_.begin(), this->output_.begin() + i + insertionVector[i] + 3, this->input_[insertionVector[i]]);
 		this->output_.insert(it, this->input_[i]);
 		++i;
 	}
