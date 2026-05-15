@@ -28,7 +28,7 @@ class PmergeMe
 		std::vector<uint64_t>	createInsertionVector(void);
 		void					binaryInsert(std::vector<uint64_t> insertionVector);
 
-		void					swapPairElems(std::pair<uint64_t,uint64_t>& p);
+		void					sortPairElems(std::pair<uint64_t,uint64_t>& p);
 	public:
 		PmergeMe(void);
 		PmergeMe(std::string toLoad);

@@ -116,7 +116,7 @@ void	PmergeMe::loadPairs(void)
 	}
 }
 
-void	PmergeMe::swapPairElems(std::pair<uint64_t,uint64_t>& p)
+void	PmergeMe::sortPairElems(std::pair<uint64_t,uint64_t>& p)
 {
 	if (p.first > p.second)
 	{
@@ -133,7 +133,7 @@ void	PmergeMe::sortPairs(void)
 
 	while (it < last)
 	{
-		swapPairElems(*it);
+		sortPairElems(*it);
 		++it;
 	}
 }
@@ -149,7 +149,7 @@ std::vector<uint64_t>	PmergeMe::createMaxVector(void)
 		ret.push_back(it->second);
 		++it;
 	}
-	if (!this->odd_)
+	if (!this->odd_) // WARN: wtf are we sure about that
 	{
 		ret.push_back(it->second);
 	}
@@ -210,6 +210,7 @@ void	PmergeMe::binaryInsert(std::vector<uint64_t> insertionVector)
 
 	while (i < this->input_.size())
 	{
+		std::cout << i + insertionVector[i] + 3 << this->output_.size() << std::endl;
 		it = std::upper_bound(this->output_.begin(), this->output_.begin() + i + insertionVector[i] + 3, this->input_[insertionVector[i]]);
 		this->output_.insert(it, this->input_[i]);
 		++i;
@@ -231,7 +232,7 @@ std::vector<uint64_t>	PmergeMe::sort(void)
 	}
 	loadPairs();
 	sortPairs();
-	sortedMaxs = createMaxVector();
+	sortedMaxs = createMaxVector(); // TOCHECK
 	recurse.loadInput(sortedMaxs);
 	sortedMaxs = recurse.sort();
 	this->output_ = sortedMaxs;
