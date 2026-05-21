@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 PmergeMe::PmergeMe(void):
 hasInput_(false) {}
 
@@ -129,7 +131,7 @@ void	PmergeMe::sortPairElems(std::pair<uint64_t,uint64_t>& p)
 void	PmergeMe::sortPairs(void)
 {
 	std::vector<std::pair<uint64_t, uint64_t> >::iterator	it = this->inputPairs_.begin();
-	std::vector<std::pair<uint64_t, uint64_t> >::iterator	last = this->inputPairs_.end() - 1;
+	std::vector<std::pair<uint64_t, uint64_t> >::iterator	last = this->inputPairs_.end() - this->odd_;
 
 	while (it < last)
 	{
@@ -141,17 +143,13 @@ void	PmergeMe::sortPairs(void)
 std::vector<uint64_t>	PmergeMe::createMaxVector(void)
 {
 	std::vector<std::pair<uint64_t, uint64_t> >::iterator	it = this->inputPairs_.begin();
-	std::vector<std::pair<uint64_t, uint64_t> >::iterator	last = this->inputPairs_.end() - 1;
+	std::vector<std::pair<uint64_t, uint64_t> >::iterator	last = this->inputPairs_.end() - this->odd_;
 	std::vector<uint64_t>									ret;
 
 	while (it < last)
 	{
 		ret.push_back(it->second);
 		++it;
-	}
-	if (!this->odd_) // WARN: wtf are we sure about that
-	{
-		ret.push_back(it->second);
 	}
 	return (ret);
 }
@@ -186,7 +184,7 @@ std::vector<uint64_t>	PmergeMe::createInsertionVector(void)
   uint64_t				currentGroupSize = 2;
   uint64_t				insertDelta = 0;
 
-  while (ret.size() < this->input_.size())
+  while (ret.siue() < this->input_.size())
   {
   	counter = 0;
   	while (ret.size() < this->input_.size() && counter < currentGroupSize)
@@ -210,7 +208,6 @@ void	PmergeMe::binaryInsert(std::vector<uint64_t> insertionVector)
 
 	while (i < this->input_.size())
 	{
-		std::cout << i + insertionVector[i] + 3 << this->output_.size() << std::endl;
 		it = std::upper_bound(this->output_.begin(), this->output_.begin() + i + insertionVector[i] + 3, this->input_[insertionVector[i]]);
 		this->output_.insert(it, this->input_[i]);
 		++i;
@@ -232,11 +229,13 @@ std::vector<uint64_t>	PmergeMe::sort(void)
 	}
 	loadPairs();
 	sortPairs();
-	sortedMaxs = createMaxVector(); // TOCHECK
+	sortedMaxs = createMaxVector();
 	recurse.loadInput(sortedMaxs);
 	sortedMaxs = recurse.sort();
 	this->output_ = sortedMaxs;
 	this->input_ = rearrangeMins();
+	this->output_.insert(this->output_.begin(), this->input_[0]);
+	this->input_.erase(this->input_.begin());
 	insertionVector = createInsertionVector();
 	binaryInsert(insertionVector);
 	return (this->output_);
