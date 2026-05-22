@@ -171,6 +171,10 @@ std::vector<uint64_t>	PmergeMe::rearrangeMins(void)
 			}
 		}
 	}
+	if (this->odd_)
+	{
+		ret.push_back(pairsIt->first);
+	}
 	return (ret);
 }
 
@@ -184,7 +188,7 @@ std::vector<uint64_t>	PmergeMe::createInsertionVector(void)
   uint64_t				currentGroupSize = 2;
   uint64_t				insertDelta = 0;
 
-  while (ret.siue() < this->input_.size())
+  while (ret.size() < this->input_.size())
   {
   	counter = 0;
   	while (ret.size() < this->input_.size() && counter < currentGroupSize)
