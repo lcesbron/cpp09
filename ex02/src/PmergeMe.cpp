@@ -1,246 +1,56 @@
 #include "PmergeMe.hpp"
-#include <algorithm>
-#include <climits>
-#include <cstdlib>
-#include <iterator>
-#include <stdexcept>
-#include <utility>
-#include <vector>
+#include <cstdint>
 
-#include <iostream>
-
-PmergeMe::PmergeMe(void):
-hasInput_(false) {}
-
-PmergeMe::PmergeMe(std::string toLoad):
-hasInput_(false)
+void	PmergeMe::sort(std::vector<std::vector<uint32_t> >& toSort)
 {
-	this->loadInput(toLoad);
-}
-
-PmergeMe::PmergeMe(PmergeMe const& toCopy):
-odd_(toCopy.odd_),
-hasInput_(toCopy.hasInput_),
-input_(toCopy.input_),
-inputPairs_(toCopy.inputPairs_),
-output_(toCopy.output_) {}
-
-PmergeMe::PmergeMe(std::vector<uint64_t> const& toLoad)
-{
-	this->loadInput(toLoad);
-}
-
-PmergeMe::~PmergeMe(void) {}
-
-PmergeMe&	PmergeMe::operator=(PmergeMe const& toAssign)
-{
-	if (this != &toAssign)
+	if (toSort.size() <= 1)
 	{
-		this->input_.clear();
-		this->output_.clear();
-		this->odd_ = toAssign.odd_;
-		this->hasInput_ = toAssign.hasInput_;
-		this->input_ = toAssign.input_;
-		this->output_ = toAssign.output_;
+		return ;
 	}
-	return (*this);
-}
 
-void	PmergeMe::loadInput(std::string& toLoad)
-{
-	char*	sptr = &toLoad[0];
-	long long	current;
+	bool				hasLeftOver = toSort.size() % 2;
+	std::vector<uint32_t>	leftOver;
 
-	if (this->hasInput_)
+	if (hasLeftOver)
 	{
-		this->input_.clear();
-		this->output_.clear();
-		this->inputPairs_.clear();
+		leftOver = toSort.back();
+		toSort.pop_back();
 	}
-	while (*sptr)
+
+	for (std::vector<std::vector<uint32_t> >::iterator it = toSort.begin(); it < toSort.end(); it += 2)
 	{
-		current = std::strtoll(sptr, &sptr, 10);
-		if (current < 0)
+		it->insert(it->end(), (it + 1)->begin(), (it + 1)->end());
+		toSort.erase(it + 1);
+	}
+
+	for (std::vector<std::vector<uint32_t> >::iterator it = toSort.begin(); it < toSort.end(); it += 1)
+	{
+		if (it->front() < *(it->begin() + it->size() / 2))
 		{
-			throw std::invalid_argument("Negative value in input array");
-		}
-		if (static_cast<unsigned long long>(current) > ULONG_MAX)
-		{
-			throw std::invalid_argument("Overflow in input array");
-		}
-		this->input_.push_back(static_cast<uint64_t>(current));
-	}
-	this->odd_ = this->input_.size() % 2;
-	this->hasInput_ = true;
-}
-
-void	PmergeMe::loadInput(std::vector<uint64_t> const& toLoad)
-{
-	if (this->hasInput_)
-	{
-		this->input_.clear();
-		this->output_.clear();
-		this->inputPairs_.clear();
-	}
-	this->input_ = toLoad;
-	this->odd_ = this->input_.size() % 2;
-	this->hasInput_ = true;
-}
-
-void	PmergeMe::loadPairs(void)
-{
-	std::pair<uint64_t, uint64_t>	current;
-	std::vector<uint64_t>::iterator	it = this->input_.begin();
-
-	// Could also do one loop whith (while it + this->odd_ ...)
-	// But would be less efficient
-	if (this->odd_)
-	{
-		while (it + 1 != this->input_.end())
-		{
-			current.first = *it;
-			current.second = it[1];
-			this->inputPairs_.push_back(current);
-			it += 2;
-		}
-		current.first = *it;
-		this->inputPairs_.push_back(current);
-	}
-	else
-	{
-		while (it != this->input_.end())
-		{
-			current.first = *it;
-			current.second = it[1];
-			this->inputPairs_.push_back(current);
-			it += 2;
+			std::vector<uint32_t>	buf(it->begin() + it->size() / 2, it->end());
+			it->erase(it->begin() + it->size() / 2, it->end());
+			it->insert(it->begin(), buf.begin(), buf.end());
 		}
 	}
-}
 
-void	PmergeMe::sortPairElems(std::pair<uint64_t,uint64_t>& p)
-{
-	if (p.first > p.second)
+	sort(toSort);
+
+	std::vector<std::vector<uint32_t> >	toInsert;
+	uint32_t							pairSize = toSort.front().size() / 2;
+
+	for (std::vector<std::vector<uint32_t> >::iterator it; it < toSort.end(); it++)
 	{
-		p.first ^= p.second;
-		p.second ^= p.first;
-		p.first ^= p.second;
+		std::vector<uint32_t>	buf(it->begin() + pairSize, it->end());
+		toInsert.push_back(buf);
+		it->erase(it->begin() + pairSize, it->end());
 	}
-}
-
-void	PmergeMe::sortPairs(void)
-{
-	std::vector<std::pair<uint64_t, uint64_t> >::iterator	it = this->inputPairs_.begin();
-	std::vector<std::pair<uint64_t, uint64_t> >::iterator	last = this->inputPairs_.end() - this->odd_;
-
-	while (it < last)
+	if (hasLeftOver)
 	{
-		sortPairElems(*it);
-		++it;
+		toInsert.push_back(leftOver);
 	}
-}
 
-std::vector<uint64_t>	PmergeMe::createMaxVector(void)
-{
-	std::vector<std::pair<uint64_t, uint64_t> >::iterator	it = this->inputPairs_.begin();
-	std::vector<std::pair<uint64_t, uint64_t> >::iterator	last = this->inputPairs_.end() - this->odd_;
-	std::vector<uint64_t>									ret;
+	toSort.insert(toSort.begin(), toInsert.front());
+	toInsert.erase(toInsert.begin());
 
-	while (it < last)
-	{
-		ret.push_back(it->second);
-		++it;
-	}
-	return (ret);
-}
 
-std::vector<uint64_t>	PmergeMe::rearrangeMins(void)
-{
-	std::vector<uint64_t>									ret;
-	std::vector<uint64_t>::iterator							maxIt;
-	std::vector<std::pair<uint64_t, uint64_t> >::iterator	pairsIt;
-
-	for (maxIt = this->output_.begin(); maxIt < this->output_.end(); maxIt++)
-	{
-		for (pairsIt = this->inputPairs_.begin(); pairsIt < this->inputPairs_.end() - this->odd_; pairsIt++)
-		{
-			if (*maxIt == pairsIt->second)
-			{
-				ret.push_back(pairsIt->first);
-				this->inputPairs_.erase(pairsIt);
-			}
-		}
-	}
-	if (this->odd_)
-	{
-		ret.push_back(pairsIt->first);
-	}
-	return (ret);
-}
-
-std::vector<uint64_t>	PmergeMe::createInsertionVector(void)
-{
-  std::vector<uint64_t>	ret;
-  uint64_t				i = 0;
-  uint64_t				counter;
-  uint64_t				buf;
-  uint64_t				prevGroupSize = 0;
-  uint64_t				currentGroupSize = 2;
-  uint64_t				insertDelta = 0;
-
-  while (ret.size() < this->input_.size())
-  {
-  	counter = 0;
-  	while (ret.size() < this->input_.size() && counter < currentGroupSize)
-  	{
-  		ret.insert(ret.begin() + insertDelta, i);
-  		++i;
-  		++counter;
-  	}
-  	buf = currentGroupSize;
-  	currentGroupSize = 2 * prevGroupSize + currentGroupSize;
-  	prevGroupSize = buf;
-  	insertDelta += prevGroupSize;
-  }
-  return (ret);
-}
-
-void	PmergeMe::binaryInsert(std::vector<uint64_t> insertionVector)
-{
-	std::vector<uint64_t>::iterator	it;
-	uint64_t						i = 0;
-
-	while (i < this->input_.size())
-	{
-		it = std::upper_bound(this->output_.begin(), this->output_.begin() + i + insertionVector[i] + 3, this->input_[insertionVector[i]]);
-		this->output_.insert(it, this->input_[i]);
-		++i;
-	}
-}
-
-std::vector<uint64_t>	PmergeMe::sort(void)
-{
-	std::vector<uint64_t>	sortedMaxs;
-	std::vector<uint64_t>	insertionVector;
-	PmergeMe				recurse;
-
-	if (!this->hasInput_)
-		throw std::logic_error("Can't sort without input.");
-	if (this->input_.size() < 2)
-	{
-		this->output_ = this->input_;
-		return (this->output_);
-	}
-	loadPairs();
-	sortPairs();
-	sortedMaxs = createMaxVector();
-	recurse.loadInput(sortedMaxs);
-	sortedMaxs = recurse.sort();
-	this->output_ = sortedMaxs;
-	this->input_ = rearrangeMins();
-	this->output_.insert(this->output_.begin(), this->input_[0]);
-	this->input_.erase(this->input_.begin());
-	insertionVector = createInsertionVector();
-	binaryInsert(insertionVector);
-	return (this->output_);
 }
