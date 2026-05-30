@@ -38,7 +38,7 @@ void	PmergeMe::sort(std::vector<std::vector<uint32_t> >& toSort)
 	std::vector<std::vector<uint32_t> >	toInsert;
 	uint32_t							pairSize = toSort.front().size() / 2;
 
-	for (std::vector<std::vector<uint32_t> >::iterator it; it < toSort.end(); it++)
+	for (std::vector<std::vector<uint32_t> >::iterator it = toSort.begin(); it < toSort.end(); it++)
 	{
 		std::vector<uint32_t>	buf(it->begin() + pairSize, it->end());
 		toInsert.push_back(buf);
@@ -52,5 +52,8 @@ void	PmergeMe::sort(std::vector<std::vector<uint32_t> >& toSort)
 	toSort.insert(toSort.begin(), toInsert.front());
 	toInsert.erase(toInsert.begin());
 
-
+	for (std::vector<std::vector<uint32_t> >::iterator it = toInsert.begin(); it < toInsert.end(); it++)
+	{
+		
+	}
 }
