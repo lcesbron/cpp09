@@ -1,5 +1,33 @@
 #include "PmergeMe.hpp"
+#include <algorithm>
 #include <cstdint>
+
+std::vector<uint32_t>	PmergeMe::createInsertionVector(uint32_t nbElems)
+{
+  std::vector<uint32_t>	ret;
+  uint32_t				i = 0;
+  uint32_t				counter;
+  uint32_t				buf;
+  uint32_t				prevGroupSize = 0;
+  uint32_t				currentGroupSize = 2;
+  uint32_t				insertDelta = 0;
+
+  while (ret.size() < nbElems)
+  {
+  	counter = 0;
+  	while (ret.size() < nbElems && counter < currentGroupSize)
+  	{
+  		ret.insert(ret.begin() + insertDelta, i);
+  		++i;
+  		++counter;
+  	}
+  	buf = currentGroupSize;
+  	currentGroupSize = 2 * prevGroupSize + currentGroupSize;
+  	prevGroupSize = buf;
+  	insertDelta += prevGroupSize;
+  }
+  return (ret);
+}
 
 void	PmergeMe::sort(std::vector<std::vector<uint32_t> >& toSort)
 {
@@ -52,8 +80,9 @@ void	PmergeMe::sort(std::vector<std::vector<uint32_t> >& toSort)
 	toSort.insert(toSort.begin(), toInsert.front());
 	toInsert.erase(toInsert.begin());
 
-	for (std::vector<std::vector<uint32_t> >::iterator it = toInsert.begin(); it < toInsert.end(); it++)
+	std::vector<uint32_t> insertionVector = createInsertionVector(toInsert.size());
+	for (uint32_t i = 0; i < insertionVector.size(); i++)
 	{
-		
+		std::vector<std::vector<uint32_t> >::iterator index = std::upper_bound(toSort.begin(), toSort.begin() + i + 2 + insertionVector[i], toInsert[insertionVector[i]]);
 	}
 }
