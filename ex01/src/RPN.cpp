@@ -70,13 +70,14 @@ int		RPN::operation(t_type operatorType, std::pair<t_value, t_value> toOperate)
 	switch (operatorType)
 	{
 		case ADD:
-			return (toOperate.first.value + toOperate.second.value);
+			return (toOperate.second.value + toOperate.first.value);
 		case SUB:
-			return (toOperate.first.value - toOperate.second.value);
+			return (toOperate.second.value - toOperate.first.value);
 		case MULT:
-			return (toOperate.first.value * toOperate.second.value);
+			return (toOperate.second.value * toOperate.first.value);
 		case DIV:
-			return (toOperate.first.value / toOperate.second.value);
+			if (toOperate.first.value == 0) {throw std::logic_error("Error: can't divide by 0");}
+			return (toOperate.second.value / toOperate.first.value);
 		default :
 			return (0);
 	}
@@ -94,6 +95,9 @@ void	RPN::computeOperator(t_type operatorType)
 	this->computeRecursiveExpression();
 	saved.first = this->expression_.top();
 	this->expression_.pop();
+
+	if (this->expression_.size() < 1) {throw std::invalid_argument("Expected values for operator");}
+
 	this->computeRecursiveExpression();
 	saved.second = this->expression_.top();
 	this->expression_.pop();
@@ -116,6 +120,10 @@ void	RPN::computeRecursiveExpression(void)
 
 int		RPN::computeExpression(void)
 {
+	if (this->expression_.size() < 1)
+	{
+		throw std::invalid_argument("Error");
+	}
 	this->computeRecursiveExpression();
 	if (this->expression_.size() > 1)
 	{
