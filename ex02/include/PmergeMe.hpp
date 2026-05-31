@@ -2,16 +2,17 @@
 # define PMERGEME_HPP
 
 # include <vector>
-# include <cstdint>
 # include <stdint.h>
-
 
 class PmergeMe
 {
 	private:
-		static createInsertionVector(uint32_t nbElems);
+		static std::vector<uint32_t>	createInsertionVector(uint32_t nbElems);
+		static bool						comp(std::vector<uint32_t> const& a, std::vector<uint32_t> const& b);
 	public:
-		void	sort(std::vector<std::vector<uint32_t> >& toSort);
+		PmergeMe(void);
+
+		static void	sort(std::vector<std::vector<uint32_t> >& toSort);
 };
 
 #endif //PMERGEME_HPP

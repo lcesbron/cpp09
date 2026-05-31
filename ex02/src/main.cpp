@@ -3,13 +3,24 @@
 
 int	main(void)
 {
-	std::vector<uint64_t>	res;
+	std::vector<std::vector<uint32_t> > input;
 
-	//PmergeMe o("0 9 8 7 6 5 4 3 2 1");
-	PmergeMe o("0 1 2 3 4 5 6 7 8 9");
-	res = o.sort();
-	for (int i = 0; i < 10; i++)
+	for (uint32_t i = 9; i; i--)
 	{
-		std::cout << res[i] << ' ';
+		std::vector<uint32_t>	toInsert;
+		toInsert.push_back(i);
+		input.push_back(toInsert);
+	}
+	std::cout << "original : ";
+	for (std::vector<std::vector<uint32_t> >::iterator it = input.begin(); it < input.end(); it++)
+	{
+		std::cout << it->front() << ' ';
+	}
+	std::cout << std::endl;
+	PmergeMe::sort(input);
+
+	for (std::vector<std::vector<uint32_t> >::iterator it = input.begin(); it < input.end(); it++)
+	{
+		std::cout << it->front() << ' ';
 	}
 }

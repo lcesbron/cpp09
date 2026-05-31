@@ -1,6 +1,7 @@
 #include "PmergeMe.hpp"
 #include <algorithm>
-#include <cstdint>
+
+PmergeMe::PmergeMe(void) {}
 
 std::vector<uint32_t>	PmergeMe::createInsertionVector(uint32_t nbElems)
 {
@@ -29,6 +30,11 @@ std::vector<uint32_t>	PmergeMe::createInsertionVector(uint32_t nbElems)
   return (ret);
 }
 
+bool						PmergeMe::comp(std::vector<uint32_t> const& a, std::vector<uint32_t> const& b)
+{
+	return (a.front() < b.front());
+}
+
 void	PmergeMe::sort(std::vector<std::vector<uint32_t> >& toSort)
 {
 	if (toSort.size() <= 1)
@@ -45,20 +51,17 @@ void	PmergeMe::sort(std::vector<std::vector<uint32_t> >& toSort)
 		toSort.pop_back();
 	}
 
-	for (std::vector<std::vector<uint32_t> >::iterator it = toSort.begin(); it < toSort.end(); it += 2)
+	for (std::vector<std::vector<uint32_t> >::iterator it = toSort.begin(); it < toSort.end(); it++)
 	{
-		it->insert(it->end(), (it + 1)->begin(), (it + 1)->end());
-		toSort.erase(it + 1);
-	}
-
-	for (std::vector<std::vector<uint32_t> >::iterator it = toSort.begin(); it < toSort.end(); it += 1)
-	{
-		if (it->front() < *(it->begin() + it->size() / 2))
+		if (comp(*it, *(it + 1)))
 		{
-			std::vector<uint32_t>	buf(it->begin() + it->size() / 2, it->end());
-			it->erase(it->begin() + it->size() / 2, it->end());
-			it->insert(it->begin(), buf.begin(), buf.end());
+			it->insert(it->begin(), (it + 1)->begin(), (it + 1)->end());
 		}
+		else
+		{
+			it->insert(it->end(), (it + 1)->begin(), (it + 1)->end());
+		}
+		toSort.erase(it + 1);
 	}
 
 	sort(toSort);
@@ -83,6 +86,7 @@ void	PmergeMe::sort(std::vector<std::vector<uint32_t> >& toSort)
 	std::vector<uint32_t> insertionVector = createInsertionVector(toInsert.size());
 	for (uint32_t i = 0; i < insertionVector.size(); i++)
 	{
-		std::vector<std::vector<uint32_t> >::iterator index = std::upper_bound(toSort.begin(), toSort.begin() + i + 2 + insertionVector[i], toInsert[insertionVector[i]]);
+		std::vector<std::vector<uint32_t> >::iterator index = std::upper_bound(toSort.begin(), toSort.begin() + i + 2 + insertionVector[i], toInsert[insertionVector[i]], comp);
+		toSort.insert(index, toInsert[insertionVector[i]]);
 	}
 }
