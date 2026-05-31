@@ -91,6 +91,8 @@ bool	BitcoinExchange::isLeapYear(unsigned int year)
 
 bool	BitcoinExchange::isDatePossible(unsigned int day, unsigned int mounth, unsigned int year)
 {
+	if (day < 1)
+		return (false);
 	switch (mounth)
 	{
 		case 1: case 3: case 5: case 7: case 8: case 10: case 12:
@@ -197,24 +199,21 @@ std::pair<std::time_t, double>	BitcoinExchange::computeFinalValue(std::pair<std:
 {
 	std::map<std::time_t, double>::const_iterator	it = this->priceHistory_.lower_bound(toFind.first);
 
-	if (toFind.first == it->first)
+	if (it != this->priceHistory_.end() && toFind.first == it->first)
 		return (*it);
-	else if (it == this->priceHistory_.begin())
-	{
+	if (it == this->priceHistory_.begin())
 		throw std::invalid_argument("No date correponding in database.");
-	}
-	else
-	{
-		return (*(it--));
-	}
+	--it;
+	return (*it);
 }
 
 void	BitcoinExchange::printLineValue(std::pair<std::time_t, double> currentLine, std::pair<std::time_t, double> finalValue)
 {
 	char buf[11];
 
-	strftime(buf, 11, "%Y-%m-%d", std::localtime(&finalValue.first));
-	std::cout << buf << " => " << currentLine.second << " = " << currentLine.second * finalValue.second <<std::endl;
+	strftime(buf, 11, "%Y-%m-%d", std::localtime(&currentLine.first));
+	std::cout.precision(15);
+	std::cout << buf << " => " << currentLine.second << " = " << currentLine.second * finalValue.second << std::endl;
 }
 
 void	BitcoinExchange::processInput(std::string inputFileName) const
